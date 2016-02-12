@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+#------------------------------------------------------------
+# libraryWindow
+#------------------------------------------------------------
+
+package libraryWindow;
+use strict;
+use warnings;
+use appUtils;
+use appWindow;
+use Library;
+use Wx qw(:everything);	# allclasses needed for MediaPlayer
+use Wx::Event qw(EVT_BUTTON);
+use base qw(Wx::Window appWindow);
+
+
+my $REMOTE_GENNYMOTION = "192.168.0.115:8008";
+	# Uhm, apparently the gmotion vBox has an address 192.168.56.101,
+	# and prh_travel router gives the android in it 192.168.0.115, so,
+	# ahem, both of those addresses work for the emulator
+my $REMOTE_CAR_STEREO = "192.168.0.103:8008";
+	# assigned by prh_travel router
+
+
+my $remote_device = $REMOTE_GENNYMOTION;
+
+
+
+my $BUTTON_SCAN = 67890;
+
+#---------------------------
+# new
+#---------------------------
+
+sub new
+{
+	my ($class,$frame,$book,$id) = @_;
+	display(0,0,"new libraryWindow()");
+	my $this = $class->SUPER::new($book,$id);
+	$this->appWindow($frame,$book,$id,"");		# "" is data
+	
+    Wx::Button->new($this,$BUTTON_SCAN,'Scan Library',[10,10],[90,30]);
+	EVT_BUTTON($this,-1,\&onButton);
+	return $this;
+}
+
+
+sub onButton
+{
+	my ($this,$event) = @_;
+	my $id = $event->GetId();
+	if ($id == $BUTTON_SCAN)
+	{
+		Library::scanner_thread(1);
+	}
+}
+
+
+1;
