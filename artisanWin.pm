@@ -3,15 +3,22 @@
 # the main application object
 #-------------------------------------------------------------------------
 
+BEGIN {
+	unshift @INC,"/base/apps/artisan"
+}
+
 package artisanFrame;
 use strict;
 use warnings;
+use threads;
+use threads::shared;
 use appFrame;
 use Utils;
 use artisanResources;
-
 use libraryWindow;
 use mediaPlayerWindow;
+use artisanInit;
+
 
 use Wx qw(:everything);
 use Wx::Event qw(
@@ -20,10 +27,18 @@ use Wx::Event qw(
 use base qw(appFrame);
 
 
-
-$appConfig::ini_file = "$script_dir/artisan.ini";
+$appConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
 unlink $appConfig::ini_file;
 	# set app specific basic directories
+
+
+# Starting Artisan here puts it in the main thread
+# which seems to work better.  And it doesn't work
+# with the multi-threaded HTTP Server!!
+
+$HTTPServer::SINGLE_THREAD=1;
+artisan::start_artisan();
+
 
 
 sub new
@@ -42,12 +57,20 @@ sub onInit
 	
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
 	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&appFrame::onOpenPane);
-
 	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&appFrame::onOpenPane);
+
+	# Starting Artisan here starts it in a child thread
+	# as evidenced by the display(), where the first integer
+	# is the thread id (0=main), and seems to have problems
+	#
+	# 		artisan::start_artisan();
+
+	# Create the local renderer
 	
+	$this->createPane($WINDOW_MEDIA_PLAYER);
+
     return $this;
 }
-
 
 
 
@@ -76,12 +99,9 @@ sub unused_onClose
 sub onTest
 {
 	my ($this) = @_;
-	if ($this->{current_pane} &&
-		$this->{current_pane}->can("loadAndPlay"))
-	{
-		$this->{current_pane}->loadAndPlay();
-	}
+	display(0,0,"artisanWin::onTest() called");
 }
+
 
 
 sub createPane

@@ -9,6 +9,7 @@ use warnings;
 use appUtils;
 use appWindow;
 use Library;
+use SSDPSearch;
 use Wx qw(:everything);	# allclasses needed for MediaPlayer
 use Wx::Event qw(EVT_BUTTON);
 use base qw(Wx::Window appWindow);
@@ -26,7 +27,9 @@ my $remote_device = $REMOTE_GENNYMOTION;
 
 
 
-my $BUTTON_SCAN = 67890;
+my $BUTTON_SCAN_LIBRARY = 67890;
+my $BUTTON_LIST_DEVICES = 67891;
+
 
 #---------------------------
 # new
@@ -39,7 +42,9 @@ sub new
 	my $this = $class->SUPER::new($book,$id);
 	$this->appWindow($frame,$book,$id,"");		# "" is data
 	
-    Wx::Button->new($this,$BUTTON_SCAN,'Scan Library',[10,10],[90,30]);
+    Wx::Button->new($this,$BUTTON_SCAN_LIBRARY,'Scan Library',[10,10],[90,30]);
+    Wx::Button->new($this,$BUTTON_LIST_DEVICES,'List Devices',[10,40],[90,30]);
+
 	EVT_BUTTON($this,-1,\&onButton);
 	return $this;
 }
@@ -49,11 +54,20 @@ sub onButton
 {
 	my ($this,$event) = @_;
 	my $id = $event->GetId();
-	if ($id == $BUTTON_SCAN)
+	if ($id == $BUTTON_SCAN_LIBRARY)
 	{
 		Library::scanner_thread(1);
 	}
+	elsif ($id == $BUTTON_LIST_DEVICES)
+	{
+		my @devices = SSDPSearch::getUPNPDeviceList();
+	}
 }
+
+
+
+
+
 
 
 1;
