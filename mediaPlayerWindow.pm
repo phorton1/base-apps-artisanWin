@@ -12,6 +12,7 @@ use appWindow;
 use Utils;
 use localRenderer;
 use DLNARenderer;
+use Library;
 use Wx qw(:everything :allclasses);	# allclasses needed for MediaPlayer
 use Wx::Event qw(
 	EVT_IDLE
@@ -59,7 +60,7 @@ sub new
 	EVT_MEDIA_PAUSE($this, -1,   		\&onMediaPause);
 	
 	display(0,1,"creating local_renderer");
-	$this->{local_renderer} = localRenderer->new();
+	$this->{local_renderer} = localRenderer->new($this);
 	display(0,1,"setting local_renderer");
 	DLNARenderer::setLocalRenderer($this->{local_renderer});
 	
@@ -90,77 +91,88 @@ sub onIdle
 	
 	if (@lr_command_stack)
 	{
-		my $string = shift(@lr_command_stack);
+		# do it, then shift it off the queue
+		my $string = $lr_command_stack[0];
 		my ($command,$arg) = split(/\t/,$string);
 		LOG(0,"onIdle doing media_player::command($command,$arg)");
-
-		if ($command eq 'stop')
-		{
-			# $this->{local_renderer}->{song_id} = '';
-			my $rslt = $this->{media_ctrl}->Stop();
-			display(0,0,"back from mp->Stop() rslt=$rslt");
-			$this->{local_renderer}->{state} = 'STOPPED1';
-			return $rslt;
-		}
-		elsif ($command eq 'pause')
-		{
-			my $rslt = $this->{media_ctrl}->Pause();
-			display(0,0,"back from mp->Pause() rslt=$rslt");
-			$this->{local_renderer}->{state} = 'PAUSED1';
-		}
-		elsif ($command eq 'seek')
-		{
-			my $millis = Renderer::time_to_secs($arg) * 1000;
-			my $rslt = $this->{media_ctrl}->Seek($millis,wxFromStart);
-			display(0,0,"back from mp->Seek() rslt=$rslt");
-			return;
-		}
-		elsif ($command eq 'play')
-		{
-			$this->{play_it} = 1;
-			return $this->{media_ctrl}->Play();
-		}
-		elsif ($command eq 'set_song')
-		{
-			if ($arg)
-			{
-				my $track = localRenderer::getDBTrack($arg);
-				if (!$track)
-				{
-					error("Could not get track($arg)");
-					return;
-				}
-		
-				my $path = "$mp3_dir/$track->{FULLNAME}";
-				display(0,1,"loading path='$path'");
-				$this->{local_renderer}->{song_id} = $arg;
-				$this->{local_renderer}->{state} = 'LOADING';
-				
-				# the path may need to be windows relative
-				
-				return $this->{media_ctrl}->LoadFile($path);
-				display(0,0,"back from LoadFile()");
-			}
-			else
-			{
-				$this->{local_renderer}->{song_id} = '';
-				$this->{local_renderer}->{state} = 'STOPPED2';
-			}
-		}
-		else
-		{
-			error("Unknown command $command arg=$arg in onIdle::command()");
-		}
+		$this->direct_command($command,$arg);
+		shift @lr_command_stack;
+		# localRenderer will be in state Transitioning, until then
 	}
 	elsif ($this->{local_renderer}->{state} =~ /PLAYING/)
 	{
-		my $millis = $this->{media_ctrl}->Tell();
-		my $secs = int(($millis+500)/1000);
-		$this->{local_renderer}->{reltime} = Renderer::secs_to_time($secs);
+		$this->{local_renderer}->{position} =
+			$this->{media_ctrl}->Tell();
 	}
 
+	$event->RequestMore(1);
 	$event->Skip();
 }
+
+
+sub direct_command
+{
+	my ($this,$command,$arg) = @_;
+	LOG(0,"direct_command($command,$arg)");
+
+	if ($command eq 'stop')
+	{
+		# $this->{local_renderer}->{song_id} = '';
+		my $rslt = $this->{media_ctrl}->Stop();
+		display(0,0,"back from mp->Stop() rslt=$rslt");
+		$this->{local_renderer}->{state} = 'STOPPED';
+		return $rslt;
+	}
+	elsif ($command eq 'pause')
+	{
+		my $rslt = $this->{media_ctrl}->Pause();
+		display(0,0,"back from mp->Pause() rslt=$rslt");
+		$this->{local_renderer}->{state} = 'PAUSED';
+	}
+	elsif ($command eq 'seek')
+	{
+		my $rslt = $this->{media_ctrl}->Seek($arg,wxFromStart);
+		display(0,0,"back from mp->Seek() rslt=$rslt");
+	}
+	elsif ($command eq 'play')
+	{
+		$this->{play_it} = 1;
+		my $rslt = $this->{media_ctrl}->Play();
+		$this->{local_renderer}->{state} = 'PLAYING';
+		display(0,0,"back from mp->Play() rslt=$rslt");
+	}
+	elsif ($command eq 'set_song')
+	{
+		if ($arg)
+		{
+			my $track = get_track(undef,$arg);
+			if (!$track)
+			{
+				error("Could not get track($arg)");
+				return;
+			}
+	
+			my $path = "$mp3_dir/$track->{path}";
+			display(0,1,"loading path='$path'");
+			$this->{local_renderer}->{song_id} = $arg;
+			$this->{local_renderer}->{state} = 'TRANSITIONING';
+			
+			# the path may need to be windows relative
+			
+			return $this->{media_ctrl}->LoadFile($path);
+			display(0,0,"back from LoadFile()");
+		}
+		else
+		{
+			$this->{local_renderer}->{song_id} = '';
+			$this->{local_renderer}->{state} = 'STOPPED';
+		}
+	}
+	else
+	{
+		error("Unknown command $command arg=$arg in onIdle::command()");
+	}
+}	# direct_command
 
 
 
@@ -190,10 +202,7 @@ sub onMediaLoaded
 	my ($this,$event) = @_;
 	display(0,0,"onMediaLoaded()");
 	$this->{local_renderer}->{state} = 'LOADED';
-	
-	my $millis = $this->{media_ctrl}->Length();
-	my $secs = int(($millis+500)/1000);
-	$this->{local_renderer}->{duration} = Renderer::secs_to_time($secs);
+	$this->{local_renderer}->{duration} = $this->{media_ctrl}->Length();
 }
 
 
@@ -211,9 +220,13 @@ sub onMediaStop
 		$this->{media_ctrl}->Play();
 		display(0,0,"Play() called");
 		$this->{play_it} = 0;
-		$this->{local_renderer}->{state} = 'PLAYING1';
-		
+		$this->{local_renderer}->{state} = 'PLAYING';
 	}
+	else
+	{
+		$this->{local_renderer}->{state} = 'STOPPED';
+	}
+	
 }
 
 
@@ -221,7 +234,7 @@ sub onMediaFinished
 {
 	my ($this,$event) = @_;
 	display(0,0,"onMediaFinished()");
-	$this->{local_renderer}->{state} = 'FINISHED';
+	$this->{local_renderer}->{state} = 'STOPPED';
 }
 
 
@@ -237,7 +250,7 @@ sub onMediaStateChange
 sub onMediaPlay{
 	my ($this,$event) = @_;
 	display(0,0,"onMediaPlay()");
-	$this->{local_renderer}->{state} = 'PLAYING2';
+	$this->{local_renderer}->{state} = 'PLAYING';
 }
 
 

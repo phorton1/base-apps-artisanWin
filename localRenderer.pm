@@ -94,6 +94,8 @@ BEGIN
 }
 
 our @lr_command_stack:shared;
+	# set on a stop, returned until the actual state changes to stopped
+	
 
 
 sub new
@@ -111,8 +113,8 @@ sub new
         # these are returned in getDeviceData()
         # and are set in the named mediaPlayerWindow method
         
-        duration => '',         # in hh::mm:ss format - from onMediaLoaded()
-        reltime => '',          # in hh::mm:ss format - from onIdle() PLAYING
+        duration => 0,          # milliseconds
+        position => 0,         
         
         # these are the normal DLNAServer member variables
         # that a derived class must provide, and which are
@@ -121,6 +123,7 @@ sub new
         
         id      => 'local_renderer',
         name    => 'Local Renderer',
+		
         maxVol  => 100,
         canMute => 0,
         canLoud => 0,
@@ -131,7 +134,7 @@ sub new
         maxHigh => 0,
 
         # there are unused normal DLNARenderer fields
-        # that arebut set for safety
+        # that are set for safety
         
         ip      => '',
         port    => '',
@@ -148,18 +151,15 @@ sub new
 sub getState
 {
     my ($this) = @_;
+	if (0 && @lr_command_stack)
+	{
+		warning(0,1,"getState() while command pending ... our state=$this->{state}");
+		return "TRANSITIONING";
+	}
+	display(0,1,"getState() returning $this->{state}");
     return $this->{state};
 }
 
-
-sub getDBTrack
-{
-    my ($id) = @_;
-    my $dbh = db_connect();
-    my $track = get_track($dbh,$id);
-    db_disconnect($dbh);
-    return $track;
-}
 
 
 sub getDeviceData()
@@ -168,35 +168,28 @@ sub getDeviceData()
     my $song_id = $this->{song_id};
     $song_id ||= '';
 
-    my $track = $song_id ? getDBTrack($song_id) : undef;
+    my $track = $song_id ? get_track(undef,$song_id) : undef;
     if ($song_id && !$track)
     {
         error("Could not get track($song_id)");
     }
-    
-    my $metadata = shared_clone({
-        artist      => $track ? $track->{ARTIST}    : '',
-        title       => $track ? $track->{TITLE}     : '',
-        album       => $track ? $track->{ALBUM}     : '',
-        track_num   => $track ? $track->{TRACKNUM}  : '',
-        albumArtURI => $track ? "http://$server_ip:$server_port/get_art/$track->{PARENT_ID}/folder.jpg" : '',        
-        genre       => $track ? $track->{GENRE}     : '',
-        date        => $track ? $track->{YEAR}      : '',
-        size        => $track ? $track->{SIZE}      : '',
-        pretty_size => $track ? pretty_bytes($track->{SIZE}) : '',
-    });
-    
+	if ($track)
+	{
+		$track->{pretty_size} = $track ? pretty_bytes($track->{size}): '';
+		$track->{art_uri} = $track->getPublicArtUri();
+	}
+	
     my $data = shared_clone({
         song_id     => $song_id,
+        position    => $this->{position} || 0,
         duration    => $this->{duration} ? $this->{duration} :
-                      $track ? Renderer::secs_to_time($track->{DURATION})
-                      : '',
-        uri			=> $track ? $track->{FULLPATH}  : '',
-        type        => $track ? $track->{TYPE}      : '',
-        reltime     => $this->{reltime} ? $this->{reltime} : '',  
+                       $track ? $track->{duration} : 0,
+        uri			=> $track ? $track->{path}    : '',
+        type        => $track ? $track->{type}    : '',
+
         vol			=> 0,
         mute		=> 0,
-        metadata    => $metadata,
+        metadata    => $track,
     });
         
     return $data;
@@ -217,7 +210,7 @@ sub doCommand
     $arg ||= '';
     
     display(0,0,"localRenderer::command($command,"._def($arg).")");
-    push @lr_command_stack,"$command\t$arg";
+	push @lr_command_stack,"$command\t$arg";
     return 1;
 }
     

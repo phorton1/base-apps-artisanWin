@@ -14,6 +14,9 @@ use threads;
 use threads::shared;
 use appFrame;
 use Utils;
+
+our $program_name = 'Artisan Server (Win wxWidgets)';
+
 use artisanResources;
 use libraryWindow;
 use mediaPlayerWindow;
