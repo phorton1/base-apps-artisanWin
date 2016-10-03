@@ -9,7 +9,8 @@ use strict;
 use warnings;
 use threads;
 use threads::shared;
-use MyWx::Frame;
+use MyWX::Frame;
+use MyWX::AppConfig;
 use Utils;
 
 our $program_name = 'Artisan Server (Win wxWidgets)';
@@ -19,12 +20,14 @@ use libraryWindow;
 use mediaPlayerWindow;
 use artisanInit;
 
+$ini_file = "/base/apps/artisanWin/artisanWin.ini";
+
 
 use Wx qw(:everything);
 use Wx::Event qw(
 	EVT_MENU
 	EVT_MENU_RANGE );
-use base qw(appFrame);
+use base qw(MyWX::Frame);
 
 
 $MyWX::appConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
@@ -56,8 +59,8 @@ sub onInit
     $this->{frames} = {};
 	
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
-	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&appFrame::onOpenPane);
-	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&appFrame::onOpenPane);
+	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
+	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::::onOpenPane);
 
 	# Starting Artisan here starts it in a child thread
 	# as evidenced by the display(), where the first integer

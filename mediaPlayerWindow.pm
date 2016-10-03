@@ -34,7 +34,7 @@ sub new
 	my ($class,$frame,$book,$id) = @_;
 	display(0,0,"new mediaPlayerWindow()");
 	my $this = $class->SUPER::new($book,$id);
-	$this->Myindow($frame,$book,$id,"");		# "" is data
+	$this->MyWindow($frame,$book,$id,"");		# "" is data
 	
     $this->{sync_dirs} = Wx::CheckBox->new($this,-1,'sync dirs',[10,10],[-1,-1]);
 	$this->{media_ctrl} = Wx::MediaCtrl->new($this,-1,"",[10,50],[1,1]);
