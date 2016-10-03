@@ -6,13 +6,13 @@
 package libraryWindow;
 use strict;
 use warnings;
-use appUtils;
-use appWindow;
-use Library;
-use SSDPSearch;
 use Wx qw(:everything);	# allclasses needed for MediaPlayer
 use Wx::Event qw(EVT_BUTTON);
-use base qw(Wx::Window appWindow);
+use My::Utils;
+use MyWX::Window;
+use Library;
+use SSDPSearch;
+use base qw(Wx::Window MyWX::Window);
 
 
 my $REMOTE_GENNYMOTION = "192.168.0.115:8008";
@@ -24,7 +24,6 @@ my $REMOTE_CAR_STEREO = "192.168.0.103:8008";
 
 
 my $remote_device = $REMOTE_GENNYMOTION;
-
 
 
 my $BUTTON_SCAN_LIBRARY = 67890;
@@ -40,7 +39,7 @@ sub new
 	my ($class,$frame,$book,$id) = @_;
 	display(0,0,"new libraryWindow()");
 	my $this = $class->SUPER::new($book,$id);
-	$this->appWindow($frame,$book,$id,"");		# "" is data
+	$this->MyWindow($frame,$book,$id,"");		# "" is data
 	
     Wx::Button->new($this,$BUTTON_SCAN_LIBRARY,'Scan Library',[10,10],[90,30]);
     Wx::Button->new($this,$BUTTON_LIST_DEVICES,'List Devices',[10,40],[90,30]);

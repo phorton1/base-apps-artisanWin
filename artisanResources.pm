@@ -10,7 +10,7 @@
 package artisanResources;
 use strict;
 use warnings;
-use appResources;
+use MyWX::Resources;
 use Wx qw(wxAUI_NB_BOTTOM);
 use Wx::AUI;
 

@@ -2,17 +2,14 @@
 #-------------------------------------------------------------------------
 # the main application object
 #-------------------------------------------------------------------------
-
-BEGIN {
-	unshift @INC,"/base/apps/artisan"
-}
+use lib '/base/apps/artisan';
 
 package artisanFrame;
 use strict;
 use warnings;
 use threads;
 use threads::shared;
-use appFrame;
+use MyWx::Frame;
 use Utils;
 
 our $program_name = 'Artisan Server (Win wxWidgets)';
@@ -30,8 +27,8 @@ use Wx::Event qw(
 use base qw(appFrame);
 
 
-$appConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
-unlink $appConfig::ini_file;
+$MyWX::appConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
+unlink $MyWX::appConfig::ini_file;
 	# set app specific basic directories
 
 
@@ -137,8 +134,8 @@ sub createPane
 package artisanApp;
 use strict;
 use warnings;
-use appUtils;
-use appMain;
+use My::Utils;
+use MyWX::Main;
 use base 'Wx::App';
 
 
@@ -155,7 +152,7 @@ sub OnInit
 
 
 my $app = artisanApp->new();
-appMain::run($app);
+MyWX::Main::run($app);
 
 # This little snippet is required for my standard
 # applications (needs to be put into)
