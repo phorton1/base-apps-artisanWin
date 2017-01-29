@@ -13,6 +13,9 @@ use MyWX::Frame;
 use MyWX::AppConfig;
 use Utils;
 
+My::Utils::USE_WIN_CONSOLE_COLORS();
+
+
 our $program_name = 'Artisan Server (Win wxWidgets)';
 
 use artisanResources;
