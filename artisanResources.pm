@@ -10,9 +10,9 @@
 package artisanResources;
 use strict;
 use warnings;
-use MyWX::Resources;
-use Wx qw(wxAUI_NB_BOTTOM);
-use Wx::AUI;
+use My::Resources;
+#use Wx qw(wxAUI_NB_BOTTOM);
+#use Wx::AUI;
 
 
 BEGIN
@@ -31,7 +31,7 @@ BEGIN
 		$WINDOW_NOW_PLAYING
 		$BEGIN_PANE_RANGE
 		$END_PANE_RANGE
-		
+
         $VIEW_OUTPUT_NB
     );
 }
@@ -40,18 +40,18 @@ BEGIN
 our (
 	$COMMAND_TEST,
     $WINDOW_MEDIA_PLAYER,
-	
+
 	# ranged windows
-	
+
 	$WINDOW_LIBRARY,
 	$WINDOW_EXPLORER,
 	$WINDOW_STATIONS,
 	$WINDOW_SEARCH,
 	$WINDOW_SONGLIST,
 	$WINDOW_NOW_PLAYING,
-	
+
 	# end (system pane command)
-	
+
     $VIEW_OUTPUT_NB )= (10000..11000);
 
 
@@ -72,10 +72,10 @@ my %command_data = (%{$resources->{command_data}},
 	$WINDOW_SEARCH			=> ['&Search',		'Search for songs by Artist, Title, etc'	],
 	$WINDOW_SONGLIST		=> ['Song&list',	'View and Modify List of Songs'	],
 	$WINDOW_NOW_PLAYING		=> ['Now &Playing',	'The Now-Playing Window'	],
-	
+
 	$COMMAND_TEST 			=> ['Test','Test'],
     $WINDOW_MEDIA_PLAYER 	=> ['Media Player',    'Media Player Window' ],
-	
+
     $VIEW_OUTPUT_NB     	=> ['Output Notebook','Open the output notebook (the output monitor)' ],
 );
 
@@ -113,7 +113,12 @@ my %notebook_data = (
         pos => 2,
         direction => 'bottom',
         title => 'Output Notebook',
-        style => wxAUI_NB_BOTTOM }
+        # style => wxAUI_NB_BOTTOM
+            # even though this style pattern is repeated in
+            # multiple applications, I could see no uses of
+            # the actual {style} member or wxAUI_NB_BOTTOM style
+            # which requires includeing WX ....
+        },
 );
 
 

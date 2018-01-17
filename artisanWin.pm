@@ -33,8 +33,8 @@ use Wx::Event qw(
 use base qw(MyWX::Frame);
 
 
-$MyWX::appConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
-unlink $MyWX::appConfig::ini_file;
+$MyWX::AppConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
+unlink $MyWX::AppConfig::ini_file;
 	# set app specific basic directories
 
 
@@ -60,7 +60,7 @@ sub onInit
     my ($this) = @_;
     return if !$this->SUPER::onInit();
     $this->{frames} = {};
-	
+
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
 	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
 	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::::onOpenPane);
@@ -72,7 +72,7 @@ sub onInit
 	# 		artisan::start_artisan();
 
 	# Create the local renderer
-	
+
 	$this->createPane($WINDOW_MEDIA_PLAYER);
 
     return $this;
@@ -118,7 +118,7 @@ sub createPane
 	display(4,1,"fileManager::createPane($id) book=".($book?$book->{name}:'undef'));
 	return error("No id specified in mbeManager::createPane()") if (!$id);
     $book = $this->getOpenDefaultNotebook($id) if (!$book);
-	
+
 	if ($id == $WINDOW_MEDIA_PLAYER)
 	{
         return mediaPlayerWindow->new($this,$book,$id);
@@ -126,7 +126,7 @@ sub createPane
 	elsif ($id == $WINDOW_LIBRARY)
 	{
         return libraryWindow->new($this,$book,$id);
-		
+
 	}
     return $this->SUPER::createPane($id,$book,$data,$config_str);
 }
