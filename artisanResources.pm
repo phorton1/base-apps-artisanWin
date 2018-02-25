@@ -31,8 +31,6 @@ BEGIN
 		$WINDOW_NOW_PLAYING
 		$BEGIN_PANE_RANGE
 		$END_PANE_RANGE
-
-        $VIEW_OUTPUT_NB
     );
 }
 
@@ -48,11 +46,7 @@ our (
 	$WINDOW_STATIONS,
 	$WINDOW_SEARCH,
 	$WINDOW_SONGLIST,
-	$WINDOW_NOW_PLAYING,
-
-	# end (system pane command)
-
-    $VIEW_OUTPUT_NB )= (10000..11000);
+	$WINDOW_NOW_PLAYING )= (10000..11000);
 
 
 # RANGED RESOURCES
@@ -75,9 +69,8 @@ my %command_data = (%{$resources->{command_data}},
 
 	$COMMAND_TEST 			=> ['Test','Test'],
     $WINDOW_MEDIA_PLAYER 	=> ['Media Player',    'Media Player Window' ],
-
-    $VIEW_OUTPUT_NB     	=> ['Output Notebook','Open the output notebook (the output monitor)' ],
 );
+
 
 # Pane data for lookup of notebook by window_id
 
@@ -90,7 +83,6 @@ my %pane_data = (
 	$WINDOW_NOW_PLAYING		=> ['now_playing',	'content'	],
 
 	$WINDOW_MEDIA_PLAYER	=> ['media_player',	'content'	],
-	$ID_MONITOR         	=> ['Monitor',		'output'	],
 );
 
 
@@ -106,29 +98,14 @@ my %notebook_data = (
         pos => 1,
         direction => '',
         title => 'Content Notebook' },
-	'output' => {
-        command_id => $VIEW_OUTPUT_NB,
-        name => 'output',
-        row => 1,
-        pos => 2,
-        direction => 'bottom',
-        title => 'Output Notebook',
-        # style => wxAUI_NB_BOTTOM
-            # even though this style pattern is repeated in
-            # multiple applications, I could see no uses of
-            # the actual {style} member or wxAUI_NB_BOTTOM style
-            # which requires includeing WX ....
-        },
 );
 
 
 my @notebooks = (
-    $notebook_data{content},
-    $notebook_data{output} );
+    $notebook_data{content} );
 
 
 my %notebook_name = (
-	$VIEW_OUTPUT_NB		 => 'output'
 );
 
 
