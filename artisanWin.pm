@@ -59,7 +59,6 @@ sub onInit
 {
     my ($this) = @_;
     return if !$this->SUPER::onInit();
-    $this->{frames} = {};
 
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
 	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
@@ -90,7 +89,6 @@ sub unused_onClose
     {
         display(0,1,"doing artisanFrame::onClose()");
         LOG(0,"shutting down ...");
-    	$this->{frames} = {};
         $event->Skip();
 		# force the floating player closed
 		# mediaPlayerWindow::forceClose();
