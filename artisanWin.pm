@@ -62,7 +62,7 @@ sub onInit
 
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
 	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
-	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::::onOpenPane);
+	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::onOpenPane);
 
 	# Starting Artisan here starts it in a child thread
 	# as evidenced by the display(), where the first integer
