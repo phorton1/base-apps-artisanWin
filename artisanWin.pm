@@ -23,7 +23,7 @@ use libraryWindow;
 use mediaPlayerWindow;
 use artisanInit;
 
-$ini_file = "/base/apps/artisanWin/artisanWin.ini";
+$ini_file = "/base/temp/artisanWin.ini";
 
 
 use Wx qw(:everything);
@@ -33,7 +33,7 @@ use Wx::Event qw(
 use base qw(MyWX::Frame);
 
 
-$MyWX::AppConfig::ini_file = "/base/apps/artisanWin/artisanWin.ini";
+$MyWX::AppConfig::ini_file = "/base/temp/artisanWin.ini";
 unlink $MyWX::AppConfig::ini_file;
 	# set app specific basic directories
 
