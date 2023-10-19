@@ -23,7 +23,7 @@ use libraryWindow;
 use mediaPlayerWindow;
 use artisanInit;
 
-$ini_file = "/base/temp/artisanWin.ini";
+$ini_file = "/base_data/temp/artisanWin.ini";
 
 
 use Wx qw(:everything);
