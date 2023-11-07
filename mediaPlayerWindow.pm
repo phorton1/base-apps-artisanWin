@@ -17,12 +17,12 @@ use Wx::Event qw(
 	EVT_MEDIA_STATECHANGED
 	EVT_MEDIA_PLAY
 	EVT_MEDIA_PAUSE);
-use MyWX::Window;
-use Utils;
+use Pub::WX::Window;
+use artisanUtils;
 use localRenderer;
 use DLNARenderer;
 use Library;
-use base qw(Wx::Window MyWX::Window);
+use base qw(Wx::Window Pub::WX::Window);
 
 
 #---------------------------
@@ -31,18 +31,18 @@ use base qw(Wx::Window MyWX::Window);
 
 sub new
 {
-	my ($class,$frame,$book,$id) = @_;
+	my ($class,$frame,$id,$book) = @_;
 	display(0,0,"new mediaPlayerWindow()");
 	my $this = $class->SUPER::new($book,$id);
 	$this->MyWindow($frame,$book,$id,"");		# "" is data
-	
+
     $this->{sync_dirs} = Wx::CheckBox->new($this,-1,'sync dirs',[10,10],[-1,-1]);
 	$this->{media_ctrl} = Wx::MediaCtrl->new($this,-1,"",[10,50],[1,1]);
 		# the minimimum height is 68 which includes
 		# transport/volume controls, and the name of the track
 		# which I don't know how to get rid of. Any bigger and
 		# it would be a video player.
-	
+
 
     $this->{media_ctrl}->Show( 1 );
     $this->{media_ctrl}->ShowPlayerControls(wxMEDIACTRLPLAYERCONTROLS_DEFAULT);
@@ -50,21 +50,21 @@ sub new
 		# wxMEDIACTRLPLAYERCONTROLS_STEP
 		# wxMEDIACTRLPLAYERCONTROLS_VOLUME
 		# wxMEDIACTRLPLAYERCONTROLS_DEFAULT
-								
+
 	EVT_MEDIA_LOADED($this, 1,   		\&onMediaLoaded);
 	EVT_MEDIA_STOP($this, -1, 	   		\&onMediaStop);
 	EVT_MEDIA_FINISHED($this, -1, 		\&onMediaFinished);
 	EVT_MEDIA_STATECHANGED($this, -1, 	\&onMediaStateChange);
 	EVT_MEDIA_PLAY($this, -1, 			\&onMediaPlay);
 	EVT_MEDIA_PAUSE($this, -1,   		\&onMediaPause);
-	
+
 	display(0,1,"creating local_renderer");
 	$this->{local_renderer} = localRenderer->new($this);
 	display(0,1,"setting local_renderer");
 	DLNARenderer::setLocalRenderer($this->{local_renderer});
-	
+
 	EVT_IDLE($this, \&onIdle);
-	
+
 	return $this;
 }
 
@@ -87,7 +87,7 @@ sub onClose
 sub onIdle
 {
 	my ($this,$event) = @_;
-	
+
 	if (@lr_command_stack)
 	{
 		# do it, then shift it off the queue
@@ -150,14 +150,14 @@ sub direct_command
 				error("Could not get track($arg)");
 				return;
 			}
-	
+
 			my $path = "$mp3_dir/$track->{path}";
 			display(0,1,"loading path='$path'");
 			$this->{local_renderer}->{song_id} = $arg;
 			$this->{local_renderer}->{state} = 'TRANSITIONING';
-			
+
 			# the path may need to be windows relative
-			
+
 			return $this->{media_ctrl}->LoadFile($path);
 			display(0,0,"back from LoadFile()");
 		}
@@ -180,7 +180,7 @@ sub unused_loadAndPlay
 	my ($this) = @_;
 	display(0,0,"loadAndPlay");
 	$this->{media_ctrl}->Stop();
-	my $file = Wx::FileSelector('Choose a media file');   
+	my $file = Wx::FileSelector('Choose a media file');
     if( length( $file ) )
 	{
 		display(0,1,"loadAndPlay got file=$file");
@@ -189,7 +189,7 @@ sub unused_loadAndPlay
 			# loadfile will issue a onMediaStop event
 			# at that point we actuall start playing
 			# the file.
-			
+
 		$this->{play_it} = 1;
 		display(0,0,"back from LoadFile()");
 	}
@@ -209,10 +209,10 @@ sub onMediaStop
 {
 	my ($this,$event) = @_;
 	display(0,0,"onMediaStop()");
-	
+
 	# if play_it == 1 this is a defered "play" command
 	# and we now start it playing ...
-	
+
 	if ($this->{play_it})
 	{
 		display(0,1,"length=".$this->{media_ctrl}->Length());
@@ -225,7 +225,7 @@ sub onMediaStop
 	{
 		$this->{local_renderer}->{state} = 'STOPPED';
 	}
-	
+
 }
 
 
@@ -258,7 +258,7 @@ sub onMediaPause
 	my ($this,$event) = @_;
 	display(0,0,"onMediaPause()");
 	$this->{local_renderer}->{state} = 'PAUSED';
-	
+
 }
 
 

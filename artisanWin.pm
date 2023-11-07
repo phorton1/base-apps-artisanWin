@@ -9,11 +9,11 @@ use strict;
 use warnings;
 use threads;
 use threads::shared;
-use MyWX::Frame;
-use MyWX::AppConfig;
-use Utils;
+use Pub::WX::Frame;
+use Pub::WX::AppConfig;
+use artisanUtils;
 
-My::Utils::USE_WIN_CONSOLE_COLORS();
+# My::Utils::USE_WIN_CONSOLE_COLORS();
 
 
 our $program_name = 'Artisan Server (Win wxWidgets)';
@@ -30,11 +30,11 @@ use Wx qw(:everything);
 use Wx::Event qw(
 	EVT_MENU
 	EVT_MENU_RANGE );
-use base qw(MyWX::Frame);
+use base qw(Pub::WX::Frame);
 
 
-$MyWX::AppConfig::ini_file = "/base/temp/artisanWin.ini";
-unlink $MyWX::AppConfig::ini_file;
+$ini_file = "/base/temp/artisanWin.ini";
+unlink $ini_file;
 	# set app specific basic directories
 
 
@@ -51,18 +51,10 @@ sub new
 {
 	my ($class, $parent) = @_;
 	my $this = $class->SUPER::new($parent);
-	return $this;
-}
-
-
-sub onInit
-{
-    my ($this) = @_;
-    return if !$this->SUPER::onInit();
 
 	EVT_MENU($this, $COMMAND_TEST, \&onTest);
-	EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
-	EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::onOpenPane);
+	# EVT_MENU($this, $WINDOW_MEDIA_PLAYER, \&MyWX::Frame::onOpenPane);
+	# EVT_MENU_RANGE($this, $BEGIN_PANE_RANGE, $END_PANE_RANGE, \&MyWX::Frame::onOpenPane);
 
 	# Starting Artisan here starts it in a child thread
 	# as evidenced by the display(), where the first integer
@@ -112,21 +104,21 @@ sub createPane
 	# factory method must be implemented if derived
     # classes want their windows restored on opening
 {
-	my ($this,$id,$book,$data,$config_str) = @_;
+	my ($this,$id,$book,$data) = @_;
 	display(4,1,"fileManager::createPane($id) book=".($book?$book->{name}:'undef'));
 	return error("No id specified in mbeManager::createPane()") if (!$id);
-    $book = $this->getOpenDefaultNotebook($id) if (!$book);
+    $book ||= $this->{book};
 
 	if ($id == $WINDOW_MEDIA_PLAYER)
 	{
-        return mediaPlayerWindow->new($this,$book,$id);
+        return mediaPlayerWindow->new($this,$id,$book);
     }
 	elsif ($id == $WINDOW_LIBRARY)
 	{
-        return libraryWindow->new($this,$book,$id);
+        return libraryWindow->new($this,$id,$book);
 
 	}
-    return $this->SUPER::createPane($id,$book,$data,$config_str);
+    return $this->SUPER::createPane($id,$book,$data);
 }
 
 
@@ -138,8 +130,8 @@ sub createPane
 package artisanApp;
 use strict;
 use warnings;
-use My::Utils;
-use MyWX::Main;
+use artisanUtils;
+use Pub::WX::Main;
 use base 'Wx::App';
 
 
@@ -148,7 +140,7 @@ my $frame;
 sub OnInit
 {
 	$frame = artisanFrame->new();
-	unless ($frame) {print "unable to create frame"; return undef}
+	if (!$frame) {print "unable to create frame"; return undef}
 	$frame->Show( 1 );
 	display(0,0,"artisan.pm started");
 	return 1;
@@ -156,7 +148,7 @@ sub OnInit
 
 
 my $app = artisanApp->new();
-MyWX::Main::run($app);
+Pub::WX::Main::run($app);
 
 # This little snippet is required for my standard
 # applications (needs to be put into)

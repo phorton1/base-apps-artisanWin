@@ -9,10 +9,10 @@ use warnings;
 use Wx qw(:everything);	# allclasses needed for MediaPlayer
 use Wx::Event qw(EVT_BUTTON);
 use My::Utils;
-use MyWX::Window;
+use Pub::WX::Window;
 use Library;
 use SSDPSearch;
-use base qw(Wx::Window MyWX::Window);
+use base qw(Wx::Window Pub::WX::Window);
 
 
 my $REMOTE_GENNYMOTION = "192.168.0.115:8008";
@@ -36,11 +36,11 @@ my $BUTTON_LIST_DEVICES = 67891;
 
 sub new
 {
-	my ($class,$frame,$book,$id) = @_;
+	my ($class,$frame,$id,$book) = @_;
 	display(0,0,"new libraryWindow()");
 	my $this = $class->SUPER::new($book,$id);
 	$this->MyWindow($frame,$book,$id,"");		# "" is data
-	
+
     Wx::Button->new($this,$BUTTON_SCAN_LIBRARY,'Scan Library',[10,10],[90,30]);
     Wx::Button->new($this,$BUTTON_LIST_DEVICES,'List Devices',[10,40],[90,30]);
 

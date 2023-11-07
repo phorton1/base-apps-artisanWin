@@ -80,7 +80,7 @@ use strict;
 use warnings;
 use threads;
 use threads::shared;
-use Utils;
+use artisanUtils;
 use Database;
 use Library;
 
@@ -95,7 +95,7 @@ BEGIN
 
 our @lr_command_stack:shared;
 	# set on a stop, returned until the actual state changes to stopped
-	
+
 
 
 sub new
@@ -109,21 +109,21 @@ sub new
 
         state   => 'INIT',      # state of this player
         song_id => '',          # currently playing song, if any
-        
+
         # these are returned in getDeviceData()
         # and are set in the named mediaPlayerWindow method
-        
+
         duration => 0,          # milliseconds
-        position => 0,         
-        
+        position => 0,
+
         # these are the normal DLNAServer member variables
         # that a derived class must provide, and which are
         # returned returned directly to the ui as a hash of
         # this object.
-        
+
         id      => 'local_renderer',
         name    => 'Local Renderer',
-		
+
         maxVol  => 100,
         canMute => 0,
         canLoud => 0,
@@ -135,16 +135,16 @@ sub new
 
         # there are unused normal DLNARenderer fields
         # that are set for safety
-        
+
         ip      => '',
         port    => '',
         transportURL => '',
         controlURL => '',
     });
-    
+
     bless $this, $class;
     return $this;
-    
+
 }
 
 
@@ -175,10 +175,10 @@ sub getDeviceData()
     }
 	if ($track)
 	{
-		$track->{pretty_size} = $track ? pretty_bytes($track->{size}): '';
+		$track->{pretty_size} = $track ? bytesAsKMGT($track->{size}): '';
 		$track->{art_uri} = $track->getPublicArtUri();
 	}
-	
+
     my $data = shared_clone({
         song_id     => $song_id,
         position    => $this->{position} || 0,
@@ -191,9 +191,9 @@ sub getDeviceData()
         mute		=> 0,
         metadata    => $track,
     });
-        
+
     return $data;
-            
+
 }
 
 
@@ -208,12 +208,12 @@ sub doCommand
 {
     my ($this,$command,$arg) = @_;
     $arg ||= '';
-    
+
     display(0,0,"localRenderer::command($command,"._def($arg).")");
 	push @lr_command_stack,"$command\t$arg";
     return 1;
 }
-    
+
 
 
 
