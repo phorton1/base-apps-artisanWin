@@ -74,6 +74,7 @@
 # communicate with an activeX control.  First try, just
 # keep a member variable to it.
 
+use lib '/base/apps/artisan';
 
 package localRenderer;
 use strict;

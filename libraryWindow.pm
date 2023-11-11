@@ -3,6 +3,8 @@
 # libraryWindow
 #------------------------------------------------------------
 
+use lib '/base/apps/artisan';
+
 package libraryWindow;
 use strict;
 use warnings;

@@ -5,6 +5,8 @@
 # uses as 1 pixel Wx::MediaCtrl() for the player.
 # should present a UI
 
+use lib '/base/apps/artisan';
+
 package mediaPlayerWindow;
 use strict;
 use warnings;
