@@ -176,7 +176,7 @@ sub getDeviceData()
     }
 	if ($track)
 	{
-		$track->{pretty_size} = $track ? bytesAsKMGT($track->{size}): '';
+		$track->{pretty_size} = $track ? prettyBytes($track->{size}): '';
 		$track->{art_uri} = $track->getPublicArtUri();
 	}
 
